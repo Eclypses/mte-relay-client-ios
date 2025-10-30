@@ -24,6 +24,9 @@
 
 import Foundation
 
+#if MTE_SWIFT_PACKAGE_MANAGER
+import Mte
+#endif
 
 // Interface of an entropy input callback.
 public protocol MteEntropyCallback {

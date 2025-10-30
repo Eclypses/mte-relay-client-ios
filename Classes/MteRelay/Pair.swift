@@ -25,6 +25,10 @@
 
 import Foundation
 
+#if MTE_SWIFT_PACKAGE_MANAGER
+import Mte
+#endif
+
 class Pair : MteEntropyCallback, MteNonceCallback {
     
     let pairId: String!

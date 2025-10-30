@@ -24,6 +24,10 @@
 
 import Foundation
 
+#if MTE_SWIFT_PACKAGE_MANAGER
+import Mte
+#endif
+
 public class MteKyber {
     
     // MARK: Class properties
