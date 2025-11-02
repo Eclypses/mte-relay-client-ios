@@ -15,24 +15,18 @@ pool: 'MacOS - Intel'
 steps:
 
 - task: InstallSSHKey@0
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/public')
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
   displayName: 'Install the SSH key'
   inputs:
     knownHostsEntry: '$(known_hosts_entry)'
     sshPublicKey: '$(ado_pk)'
     sshKeySecureFile: 'id_ed25519'
 
-  #  Not building at the moment but I'll want to correct this later JGW
-# - script: |
-#     xcodebuild -scheme MteRelay -destination 'platform=iOS Simulator,OS=16.2,name=iPhone 15 Pro' build
-#   displayName: 'Build on MteRelay Package'
-#   workingDirectory: $(relayDirectory)
-
 - task: DeleteFiles@1
   displayName: 'Delete unnecessary files before push to public remote'
   condition: and(
                succeeded(),
-               eq(variables['Build.SourceBranch'], 'refs/heads/public')
+               eq(variables['Build.SourceBranch'], 'refs/heads/master')
              )
   inputs:
     SourceFolder: $(relayDirectory)
@@ -47,7 +41,7 @@ steps:
   displayName: 'Commit unnecessary file deletion'
   condition: and(
                succeeded(),
-               eq(variables['Build.SourceBranch'], 'refs/heads/public')
+               eq(variables['Build.SourceBranch'], 'refs/heads/master')
              )
   workingDirectory: $(relayDirectory)
 
