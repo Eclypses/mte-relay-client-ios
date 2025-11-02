@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'MteRelay'
-  s.version      = '6'
+  s.version      = '4.4.6'
   s.summary      = 'Eclypses MTE Relay Client for iOS'
   s.description  = 'Swift wrapper and client for the Eclypses MTE Relay, including the precompiled Mte static library.'
   s.homepage     = 'https://github.com/Eclypses/mte-relay-client-ios'
