@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.7] - 2025-11-01
+
+### Added
+    - Copied code from eclypses-aws-mte-relay-client-ios
+
+### Changed
+    - Something wrong with tag 4.4.6. Bumped version to 4.4.7
+### Fixed
+    - Client can be utilized as a Swift Package or a CocoaPod now.
+
+[4.4.7]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.7
+
 ## [4.4.6] - 2025-11-01
 
 ### Added
