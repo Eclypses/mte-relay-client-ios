@@ -3,7 +3,7 @@
 trigger:
     branches:
       include:
-        - develop
+        - master
         
 variables:
     packageName: 'mte-relay-client-ios'
