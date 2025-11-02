@@ -49,7 +49,7 @@ steps:
   displayName: 'Push to Public GitHub'
   condition: and(
                succeeded(),
-               eq(variables['Build.SourceBranch'], 'refs/heads/public')
+               eq(variables['Build.SourceBranch'], 'refs/heads/master')
              )
   inputs:
     script: |
