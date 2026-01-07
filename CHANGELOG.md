@@ -2,17 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+-
+
+### Changed
+-
+
+### Fixed
+-
+
+
+## [4.4.8] - 2026-01-07
+
+### Added
+- Added dev_docs directory with library context and release steps
+- Added release.sh script to automate version bumping and changelog rotation
+
+### Changed
+- Changed azure-pipelines.yml to remove dev_docs directory and release.sh upon push to public GitHub
+    
+### Fixed
+- 
+
+
 ## [4.4.7] - 2025-11-01
 
 ### Added
-    - Copied code from eclypses-aws-mte-relay-client-ios
+- Copied code from eclypses-aws-mte-relay-client-ios
 
 ### Changed
-    - Something wrong with tag 4.4.6. Bumped version to 4.4.7
+- Something wrong with tag 4.4.6. Bumped version to 4.4.7
 ### Fixed
-    - Client can be utilized as a Swift Package or a CocoaPod now.
+- Client can be utilized as a Swift Package or a CocoaPod now.
 
-[4.4.7]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.7
 
 ## [4.4.6] - 2025-11-01
 
@@ -25,7 +49,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
     - Client can be utilized as a Swift Package or a CocoaPod now.
 
-[4.4.6]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.6
 
 ## [4.4.3] - 2025-10-28
 
@@ -35,7 +58,6 @@ All notable changes to this project will be documented in this file.
     - Updated MteRelay.podspec to produce a single MteRelay module
 ### Fixed
 
-[4.4.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.3
 
 ## [4.4.2] - 2025-09-04
 
@@ -45,7 +67,6 @@ All notable changes to this project will be documented in this file.
     - Updated MteRelay.podspec to produce multiple modules
 ### Fixed
 
-[4.4.2]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.2
 
 ## [4.4.1] - 2025-09-03
 
@@ -55,7 +76,6 @@ All notable changes to this project will be documented in this file.
     - Updated MteRelay.podspec to remove commented code
 ### Fixed
 
-[4.4.1]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.1
 
 ## [4.4.0] - 2025-09-03
 
@@ -66,7 +86,6 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-[4.4.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.0
 
 ## [4.3.4] - 2025-05-12
 
@@ -77,7 +96,6 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-[4.3.4]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.4
 
 ## [4.3.3] - 2025-05-12
 
@@ -92,7 +110,6 @@ All notable changes to this project will be documented in this file.
 - Removed debug comments
 -  
 
-[4.3.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.3
 
 ## [4.3.2] - 2025-05-01
 
@@ -105,7 +122,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed issue where we were prematurely discarding extra pairs before we were finishedd with them. 
 
-[4.3.2]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.2
 
 ## [4.3.1] - 2025-05-01
 
@@ -119,8 +135,6 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Out-of-sequence errors in FileStream operations
-
-[4.3.1]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.1
 
 
 ## [4.3.0] - 2025-04-29
@@ -136,8 +150,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Out-of-sequence errors in FileStream operations
 
-[4.3.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.0
-
 
 ## [4.2.0] - 2025-04-02
 
@@ -152,4 +164,20 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Ensured `pathnamePrefix` is fully functional across all applicable requests.
 
+
+
 [4.2.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.2.0
+[4.3.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.0
+[4.3.1]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.1
+[4.3.2]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.2
+[4.3.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.3
+[4.3.4]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.3.4
+[4.4.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.0
+[4.4.1]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.1
+[4.4.2]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.2
+[4.4.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.3
+[4.4.6]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.6
+[4.4.7]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.7
+
+
+[4.4.8]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.8

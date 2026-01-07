@@ -27,7 +27,7 @@ import Foundation
 
 actor Settings {
     
-    static let relayVersion = "4.3.2"
+    static let relayVersion = "4.4.8"
     
     static let licCompanyName: String = "Eclypses Inc"
     static let licCompanyKey: String = "9eHOohOm/GwY01xbvNTL9B+1"
