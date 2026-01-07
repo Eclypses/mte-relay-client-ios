@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+-
+
+### Changed
+-
+
+### Fixed
+-
+
+
+## [4.4.8] - 2026-01-07
+
+### Added
 - Added dev_docs directory with library context and release steps
 - Added release.sh script to automate version bumping and changelog rotation
 
@@ -167,3 +179,5 @@ All notable changes to this project will be documented in this file.
 [4.4.6]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.6
 [4.4.7]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.7
 
+
+[4.4.8]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.8
