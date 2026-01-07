@@ -11,6 +11,18 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Fixed
+-
+
+
+## [4.4.9] - 2026-01-07
+
+### Added
+-
+
+### Changed
+-
+
+### Fixed
 - Changed release.sh to provide correct guidance to tag and push release.sh commit to remote.
 
 
@@ -181,3 +193,5 @@ All notable changes to this project will be documented in this file.
 
 
 [4.4.8]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.8
+
+[4.4.9]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.9
