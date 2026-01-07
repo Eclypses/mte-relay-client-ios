@@ -30,11 +30,12 @@ sed -i '' "s/static let relayVersion = \".*\"/static let relayVersion = \"$CLEAN
 
 # 3. Update Package.swift Comment (Use CLEAN version: "4.3.2")
 # Looks for: // Version: ...
-sed -i '' "s/\/\/ Version: .*/\/\/ Version: $CLEAN_VERSION/" "$PACKAGE_PATH"
+sed -i '' "s/\/\/ Relay Package Version: .*/\/\/ Relay Package Version: $CLEAN_VERSION/" "$PACKAGE_PATH"
 
 # 4. Update CHANGELOG.md Headers
 # Uses tags like [4.3.2] for headers
-SEARCH="## [Unreleased]"
+# NOTE: Requires a '## [Unreleased]' section in your CHANGELOG.md to work.
+SEARCH="## \[Unreleased\]"
 REPLACE="## [Unreleased]\\
 \\
 ### Added\\
@@ -62,10 +63,10 @@ echo "$NEW_LINK" >> "$CHANGELOG_PATH"
 # 6. Git Operations
 echo "📦 Committing changes..."
 git add "$SETTINGS_PATH" "$PACKAGE_PATH" "$CHANGELOG_PATH"
-git commit -m "chore: bump version to $CLEAN_VERSION"
+ git commit -m "chore: bump version to $CLEAN_VERSION"
 
 echo "🏷️  Tagging version $TAG_VERSION..."
-git tag "$TAG_VERSION"
+ git tag -a "$TAG_VERSION" -m "Release version $CLEAN_VERSION"
 
 echo "✅ Done! Validate the changes, then run:"
 echo "   git push && git push --tags"

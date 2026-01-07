@@ -5,25 +5,25 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-    - Added dev_docs directory with library context and release steps
-    - Added release.sh script to automate version bumping and changelog rotation
+- Added dev_docs directory with library context and release steps
+- Added release.sh script to automate version bumping and changelog rotation
 
 ### Changed
-    - Changed azure-pipelines.yml to remove dev_docs directory and release.sh upon push to public GitHub
+- Changed azure-pipelines.yml to remove dev_docs directory and release.sh upon push to public GitHub
     
 ### Fixed
-    - 
+- 
 
 
 ## [4.4.7] - 2025-11-01
 
 ### Added
-    - Copied code from eclypses-aws-mte-relay-client-ios
+- Copied code from eclypses-aws-mte-relay-client-ios
 
 ### Changed
-    - Something wrong with tag 4.4.6. Bumped version to 4.4.7
+- Something wrong with tag 4.4.6. Bumped version to 4.4.7
 ### Fixed
-    - Client can be utilized as a Swift Package or a CocoaPod now.
+- Client can be utilized as a Swift Package or a CocoaPod now.
 
 
 ## [4.4.6] - 2025-11-01
@@ -166,3 +166,4 @@ All notable changes to this project will be documented in this file.
 [4.4.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.3
 [4.4.6]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.6
 [4.4.7]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/4.4.7
+
