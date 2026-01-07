@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Fixed
--
+- Changed release.sh to provide correct guidance to tag and push release.sh commit to remote.
 
 
 ## [4.4.8] - 2026-01-07
