@@ -14,6 +14,18 @@ All notable changes to this project will be documented in this file.
 -
 
 
+## [4.4.10] - 2026-01-14
+
+### Added
+-
+
+### Changed
+- Updated README to be comprehensive implementation guide.
+
+### Fixed
+-
+
+
 ## [4.4.9] - 2026-01-07
 
 ### Added
@@ -195,3 +207,5 @@ All notable changes to this project will be documented in this file.
 [4.4.8]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.8
 
 [4.4.9]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.9
+
+[4.4.10]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.10
