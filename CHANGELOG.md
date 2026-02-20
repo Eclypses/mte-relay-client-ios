@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+-
+
+### Changed
+-
+
+### Fixed
+-
+
+
+## [4.5.0] - 2026-02-20
+
+### Added
 - Added deterministic XCTest suite with layered fixtures/fakes, protocol contract coverage, callback boundary coverage, and throughput edge scenarios.
 - Added `scripts/generate_coverage.sh` to generate coverage artifacts and reports under `artifacts/coverage/`.
 - Added `scripts/verify_coverage.sh` with configurable `MIN_LINE_COVERAGE` threshold enforcement.
@@ -216,3 +228,5 @@ All notable changes to this project will be documented in this file.
 [4.4.9]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.9
 
 [4.4.10]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.10
+
+[4.5.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.0
