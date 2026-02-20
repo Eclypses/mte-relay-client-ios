@@ -1,18 +1,114 @@
-
-
 trigger:
     branches:
       include:
+        - develop
         - master
         
 variables:
     packageName: 'mte-relay-client-ios'
     relayDirectory: '$(Build.Repository.LocalPath)'
+  minLineCoverage: '0.40'
+  iosTestDestination: 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
 
 
 pool: 'MacOS - Intel'
 
 steps:
+
+- script: |
+    set -euo pipefail
+
+    selected=""
+    for candidate in /Applications/Xcode_16.2.app /Applications/Xcode_16.1.app /Applications/Xcode_16.0.app /Applications/Xcode_15.4.app; do
+      if [ -d "$candidate/Contents/Developer" ]; then
+        selected="$candidate/Contents/Developer"
+        break
+      fi
+    done
+
+    if [ -z "$selected" ]; then
+      echo "Error: Required Xcode toolchain not found."
+      exit 1
+    fi
+
+    export DEVELOPER_DIR="$selected"
+    echo "Using DEVELOPER_DIR=$DEVELOPER_DIR"
+
+    command -v xcrun >/dev/null 2>&1 || { echo "Error: xcrun is required."; exit 1; }
+    command -v swift >/dev/null 2>&1 || { echo "Error: swift is required."; exit 1; }
+    command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required."; exit 1; }
+
+    xcrun xcodebuild -version
+    swift --version
+  displayName: 'Preflight toolchain checks'
+  workingDirectory: $(relayDirectory)
+
+- script: |
+    set -euo pipefail
+
+    if [ -f .swiftformat ] || [ -f .swiftformat.yml ]; then
+      if command -v swiftformat >/dev/null 2>&1; then
+        swiftformat --lint .
+      else
+        echo "swiftformat config found, but swiftformat is not installed. Failing fast."
+        exit 1
+      fi
+    else
+      echo "No swiftformat config found. Skipping format check."
+    fi
+
+    if [ -f .swiftlint.yml ]; then
+      if command -v swiftlint >/dev/null 2>&1; then
+        swiftlint --strict
+      else
+        echo "swiftlint config found, but swiftlint is not installed. Failing fast."
+        exit 1
+      fi
+    else
+      echo "No swiftlint config found. Skipping lint check."
+    fi
+  displayName: 'Lint and format checks (if configured)'
+  workingDirectory: $(relayDirectory)
+
+- script: |
+    set -euo pipefail
+    xcodebuild test \
+      -scheme MteRelay \
+      -destination "$(iosTestDestination)" \
+      -only-testing:MteRelayTests/ModelAndFixtureTests \
+      -only-testing:MteRelayTests/HeaderExtensionsAndThroughputTests \
+      -only-testing:MteRelayTests/DelegateContractAndBridgeTests \
+      -only-testing:MteRelayTests/StreamDelegateProxyTests
+  displayName: 'Run targeted new suites'
+  workingDirectory: $(relayDirectory)
+
+- script: |
+    set -euo pipefail
+    xcodebuild test \
+      -scheme MteRelay \
+      -destination "$(iosTestDestination)"
+  displayName: 'Run full unit suite'
+  workingDirectory: $(relayDirectory)
+
+- script: |
+    set -euo pipefail
+  IOS_TEST_DESTINATION="$(iosTestDestination)" bash scripts/generate_coverage.sh
+  displayName: 'Generate coverage report (develop only)'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  workingDirectory: $(relayDirectory)
+
+- script: |
+    set -euo pipefail
+    MIN_LINE_COVERAGE="$(minLineCoverage)" bash scripts/verify_coverage.sh
+  displayName: 'Verify coverage threshold (develop only)'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  workingDirectory: $(relayDirectory)
+
+- script: |
+    echo "Skipping coverage for master branch by policy."
+  displayName: 'Coverage skipped on master'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  workingDirectory: $(relayDirectory)
 
 - task: InstallSSHKey@0
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
