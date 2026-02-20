@@ -1,156 +1,188 @@
 trigger:
-    branches:
-      include:
-        - develop
-        - master
-        
-variables:
-    packageName: 'mte-relay-client-ios'
-    relayDirectory: '$(Build.Repository.LocalPath)'
-  minLineCoverage: '0.40'
-  iosTestDestination: 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
+  branches:
+    include:
+      - develop
+      - master
 
+pr:
+  branches:
+    include:
+      - master
+
+variables:
+  packageName: 'mte-relay-client-ios'
+  relayDirectory: '$(Build.Repository.LocalPath)'
+  minLineCoverage: '0.40'
 
 pool: 'MacOS - Intel'
 
 steps:
-
-- script: |
-    set -euo pipefail
-
-    selected=""
-    for candidate in /Applications/Xcode_16.2.app /Applications/Xcode_16.1.app /Applications/Xcode_16.0.app /Applications/Xcode_15.4.app; do
-      if [ -d "$candidate/Contents/Developer" ]; then
-        selected="$candidate/Contents/Developer"
-        break
-      fi
-    done
-
-    if [ -z "$selected" ]; then
-      echo "Error: Required Xcode toolchain not found."
-      exit 1
-    fi
-
-    export DEVELOPER_DIR="$selected"
-    echo "Using DEVELOPER_DIR=$DEVELOPER_DIR"
-
-    command -v xcrun >/dev/null 2>&1 || { echo "Error: xcrun is required."; exit 1; }
-    command -v swift >/dev/null 2>&1 || { echo "Error: swift is required."; exit 1; }
-    command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required."; exit 1; }
-
-    xcrun xcodebuild -version
-    swift --version
-  displayName: 'Preflight toolchain checks'
-  workingDirectory: $(relayDirectory)
-
-- script: |
-    set -euo pipefail
-
-    if [ -f .swiftformat ] || [ -f .swiftformat.yml ]; then
-      if command -v swiftformat >/dev/null 2>&1; then
-        swiftformat --lint .
-      else
-        echo "swiftformat config found, but swiftformat is not installed. Failing fast."
-        exit 1
-      fi
-    else
-      echo "No swiftformat config found. Skipping format check."
-    fi
-
-    if [ -f .swiftlint.yml ]; then
-      if command -v swiftlint >/dev/null 2>&1; then
-        swiftlint --strict
-      else
-        echo "swiftlint config found, but swiftlint is not installed. Failing fast."
-        exit 1
-      fi
-    else
-      echo "No swiftlint config found. Skipping lint check."
-    fi
-  displayName: 'Lint and format checks (if configured)'
-  workingDirectory: $(relayDirectory)
-
-- script: |
-    set -euo pipefail
-    xcodebuild test \
-      -scheme MteRelay \
-      -destination "$(iosTestDestination)" \
-      -only-testing:MteRelayTests/ModelAndFixtureTests \
-      -only-testing:MteRelayTests/HeaderExtensionsAndThroughputTests \
-      -only-testing:MteRelayTests/DelegateContractAndBridgeTests \
-      -only-testing:MteRelayTests/StreamDelegateProxyTests
-  displayName: 'Run targeted new suites'
-  workingDirectory: $(relayDirectory)
-
-- script: |
-    set -euo pipefail
-    xcodebuild test \
-      -scheme MteRelay \
-      -destination "$(iosTestDestination)"
-  displayName: 'Run full unit suite'
-  workingDirectory: $(relayDirectory)
-
-- script: |
-    set -euo pipefail
-  IOS_TEST_DESTINATION="$(iosTestDestination)" bash scripts/generate_coverage.sh
-  displayName: 'Generate coverage report (develop only)'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-  workingDirectory: $(relayDirectory)
-
-- script: |
-    set -euo pipefail
-    MIN_LINE_COVERAGE="$(minLineCoverage)" bash scripts/verify_coverage.sh
-  displayName: 'Verify coverage threshold (develop only)'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-  workingDirectory: $(relayDirectory)
-
-- script: |
-    echo "Skipping coverage for master branch by policy."
-  displayName: 'Coverage skipped on master'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  workingDirectory: $(relayDirectory)
-
-- task: InstallSSHKey@0
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
-  displayName: 'Install the SSH key'
-  inputs:
-    knownHostsEntry: '$(known_hosts_entry)'
-    sshPublicKey: '$(ado_pk)'
-    sshKeySecureFile: 'id_ed25519'
-
-- task: DeleteFiles@1
-  displayName: 'Delete unnecessary files before push to public remote'
-  condition: and(
-               succeeded(),
-               eq(variables['Build.SourceBranch'], 'refs/heads/master')
-             )
-  inputs:
-    SourceFolder: $(relayDirectory)
-    Contents: |
-      .gitignore
-      **/*.yml
-      dev_docs
-      release.sh
-
-- script: |
-    git add .
-    git commit -am 'Commit unnecessary file deletion'
-  displayName: 'Commit unnecessary file deletion'
-  condition: and(
-               succeeded(),
-               eq(variables['Build.SourceBranch'], 'refs/heads/master')
-             )
-  workingDirectory: $(relayDirectory)
-
-- task: CmdLine@2
-  displayName: 'Push to Public GitHub'
-  condition: and(
-               succeeded(),
-               eq(variables['Build.SourceBranch'], 'refs/heads/master')
-             )
-  inputs:
-    script: |
-      ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
-      git push git@github.com:Eclypses/$(Build.Repository.Name).git HEAD:refs/heads/public --force  --tags
+  - script: |
+      set -euo pipefail
+      ruby -e "require 'yaml'; YAML.load_file('azure-pipelines.yml'); puts 'azure-pipelines.yml syntax OK'"
+    displayName: 'Lint pipeline YAML'
     workingDirectory: $(relayDirectory)
+
+  - script: |
+      set -euo pipefail
+
+      selected=""
+      for candidate in /Applications/Xcode_16.2.app /Applications/Xcode_16.1.app /Applications/Xcode_16.0.app /Applications/Xcode_15.4.app; do
+        if [ -d "$candidate/Contents/Developer" ]; then
+          selected="$candidate/Contents/Developer"
+          break
+        fi
+      done
+
+      if [ -z "$selected" ]; then
+        echo "Error: Required Xcode toolchain not found."
+        exit 1
+      fi
+
+      export DEVELOPER_DIR="$selected"
+      echo "Using DEVELOPER_DIR=$DEVELOPER_DIR"
+
+      command -v xcrun >/dev/null 2>&1 || { echo "Error: xcrun is required."; exit 1; }
+      command -v swift >/dev/null 2>&1 || { echo "Error: swift is required."; exit 1; }
+      command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required."; exit 1; }
+
+      xcrun xcodebuild -version
+      swift --version
+    displayName: 'Preflight toolchain checks'
+    workingDirectory: $(relayDirectory)
+
+  - script: |
+      set -euo pipefail
+
+      if [ -f .swiftformat ] || [ -f .swiftformat.yml ]; then
+        if command -v swiftformat >/dev/null 2>&1; then
+          swiftformat --lint .
+        else
+          echo "swiftformat config found, but swiftformat is not installed. Failing fast."
+          exit 1
+        fi
+      else
+        echo "No swiftformat config found. Skipping format check."
+      fi
+
+      if [ -f .swiftlint.yml ]; then
+        if command -v swiftlint >/dev/null 2>&1; then
+          swiftlint --strict
+        else
+          echo "swiftlint config found, but swiftlint is not installed. Failing fast."
+          exit 1
+        fi
+      else
+        echo "No swiftlint config found. Skipping lint check."
+      fi
+    displayName: 'Lint and format checks (if configured)'
+    workingDirectory: $(relayDirectory)
+
+  - script: |
+      set -euo pipefail
+
+      SIM_ID=$(xcrun simctl list devices available -j | /usr/bin/python3 -c 'import json,sys; d=json.load(sys.stdin).get("devices",{}); sims=[(0 if dev.get("name","").startswith("iPhone") else 1, dev.get("name",""), dev.get("udid","")) for runtime,devs in d.items() if "iOS" in runtime for dev in devs if dev.get("isAvailable")]; sims.sort(key=lambda x:(x[0],x[1])); print(sims[0][2] if sims else "")')
+      if [ -z "$SIM_ID" ]; then
+        echo "Unable to determine an available iOS Simulator device"
+        xcrun simctl list devices
+        exit 1
+      fi
+
+      xcodebuild test \
+        -scheme MteRelay \
+        -destination "id=$SIM_ID" \
+        -only-testing:MteRelayTests/ModelAndFixtureTests \
+        -only-testing:MteRelayTests/HeaderExtensionsAndThroughputTests \
+        -only-testing:MteRelayTests/DelegateContractAndBridgeTests \
+        -only-testing:MteRelayTests/StreamDelegateProxyTests
+    displayName: 'Run targeted new suites'
+    workingDirectory: $(relayDirectory)
+
+  - script: |
+      set -euo pipefail
+
+      SIM_ID=$(xcrun simctl list devices available -j | /usr/bin/python3 -c 'import json,sys; d=json.load(sys.stdin).get("devices",{}); sims=[(0 if dev.get("name","").startswith("iPhone") else 1, dev.get("name",""), dev.get("udid","")) for runtime,devs in d.items() if "iOS" in runtime for dev in devs if dev.get("isAvailable")]; sims.sort(key=lambda x:(x[0],x[1])); print(sims[0][2] if sims else "")')
+      if [ -z "$SIM_ID" ]; then
+        echo "Unable to determine an available iOS Simulator device"
+        xcrun simctl list devices
+        exit 1
+      fi
+
+      xcodebuild test \
+        -scheme MteRelay \
+        -destination "id=$SIM_ID"
+    displayName: 'Run full unit suite'
+    workingDirectory: $(relayDirectory)
+
+  - script: |
+      set -euo pipefail
+
+      SIM_ID=$(xcrun simctl list devices available -j | /usr/bin/python3 -c 'import json,sys; d=json.load(sys.stdin).get("devices",{}); sims=[(0 if dev.get("name","").startswith("iPhone") else 1, dev.get("name",""), dev.get("udid","")) for runtime,devs in d.items() if "iOS" in runtime for dev in devs if dev.get("isAvailable")]; sims.sort(key=lambda x:(x[0],x[1])); print(sims[0][2] if sims else "")')
+      if [ -z "$SIM_ID" ]; then
+        echo "Unable to determine an available iOS Simulator device"
+        xcrun simctl list devices
+        exit 1
+      fi
+
+      IOS_TEST_DESTINATION="id=$SIM_ID" bash scripts/generate_coverage.sh
+    displayName: 'Generate coverage report (develop only)'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    workingDirectory: $(relayDirectory)
+
+  - script: |
+      set -euo pipefail
+      MIN_LINE_COVERAGE="$(minLineCoverage)" bash scripts/verify_coverage.sh
+    displayName: 'Verify coverage threshold (develop only)'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    workingDirectory: $(relayDirectory)
+
+  - script: |
+      echo "Skipping coverage for master branch by policy."
+    displayName: 'Coverage skipped on master'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    workingDirectory: $(relayDirectory)
+
+  - task: InstallSSHKey@0
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+    displayName: 'Install the SSH key'
+    inputs:
+      knownHostsEntry: '$(known_hosts_entry)'
+      sshPublicKey: '$(ado_pk)'
+      sshKeySecureFile: 'id_ed25519'
+
+  - task: DeleteFiles@1
+    displayName: 'Delete unnecessary files before push to public remote'
+    condition: and(
+                 succeeded(),
+                 eq(variables['Build.SourceBranch'], 'refs/heads/master')
+               )
+    inputs:
+      SourceFolder: $(relayDirectory)
+      Contents: |
+        .gitignore
+        **/*.yml
+        dev_docs
+        release.sh
+
+  - script: |
+      git add .
+      git commit -am 'Commit unnecessary file deletion'
+    displayName: 'Commit unnecessary file deletion'
+    condition: and(
+                 succeeded(),
+                 eq(variables['Build.SourceBranch'], 'refs/heads/master')
+               )
+    workingDirectory: $(relayDirectory)
+
+  - task: CmdLine@2
+    displayName: 'Push to Public GitHub'
+    condition: and(
+                 succeeded(),
+                 eq(variables['Build.SourceBranch'], 'refs/heads/master')
+               )
+    inputs:
+      script: |
+        ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+        git push git@github.com:Eclypses/$(Build.Repository.Name).git HEAD:refs/heads/public --force --tags
+      workingDirectory: $(relayDirectory)
 
