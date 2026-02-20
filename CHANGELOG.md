@@ -5,13 +5,20 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
--
+- Added deterministic XCTest suite with layered fixtures/fakes, protocol contract coverage, callback boundary coverage, and throughput edge scenarios.
+- Added `scripts/generate_coverage.sh` to generate coverage artifacts and reports under `artifacts/coverage/`.
+- Added `scripts/verify_coverage.sh` with configurable `MIN_LINE_COVERAGE` threshold enforcement.
+- Added `dev_docs/TESTING.md` with test architecture, reusable patterns, commands, coverage behavior, and CI branch rules.
 
 ### Changed
--
+- Updated `azure-pipelines.yml` to run deterministic preflight checks, conditional lint/format checks, targeted test suites, full suite, and develop-only coverage verification.
+- Extracted relay header codec helpers into `Classes/MteRelay/Helpers/RelayHeaderCodec.swift` for cleaner testability without runtime behavior changes.
+- Updated `Package.swift` to include explicit macOS platform metadata for local toolchain compatibility and added SPM test target wiring.
+- Updated `release.sh` with clean-tree and develop-branch preflight checks.
+- Updated library context docs with concise testing architecture/tooling notes.
 
 ### Fixed
--
+- Fixed local/CI coverage workflow for iOS-binary-linked package by using xcodebuild simulator test execution plus xccov reporting.
 
 
 ## [4.4.10] - 2026-01-14

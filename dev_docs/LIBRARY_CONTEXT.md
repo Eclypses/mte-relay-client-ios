@@ -82,5 +82,21 @@ Configuration is minimal and handled during initialization:
 *   **`Settings.swift`**: License keys, server URLs, chunk sizes, and pool sizes.
 *   **`Relay`**: Accepts server URL and options; delegates must be set for callbacks.
 
+## 7. Testing and Quality Gates
+Baseline testing now uses deterministic XCTest suites in `Tests/MteRelayTests` with:
+*   Reusable fixtures for endpoints, headers, payload variants, and error cases.
+*   Hand-written fakes with call counters, argument capture, ordered call history, event simulation, and reset/dispose helpers.
+*   Coverage for model behavior, delegate protocol contracts, callback boundaries, and throughput/edge loops.
+
+Coverage and verification workflow:
+*   Generate: `bash scripts/generate_coverage.sh`
+*   Verify: `MIN_LINE_COVERAGE=0.40 bash scripts/verify_coverage.sh`
+*   Override: `MIN_LINE_COVERAGE=0.45 bash scripts/verify_coverage.sh`
+
+CI branch behavior:
+*   Unit checks/tests run on every pipeline execution.
+*   Coverage generation + gate run on `develop` only.
+*   Coverage is skipped on `master` by policy.
+
 ---
 This document provides a concise technical context for the iOS MteRelay client library. For API usage, see the README.md.

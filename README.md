@@ -1369,6 +1369,10 @@ This section covers common issues and their solutions.
    print("MTE Version: \(MteBase.getVersion())")
    ```
 
+7. **For contributors running coverage locally:**
+    - Coverage outputs are generated under `artifacts/coverage/`
+    - This directory is git-ignored by design, so local coverage runs do not pollute diffs
+
 ---
 
 ### Getting Help
