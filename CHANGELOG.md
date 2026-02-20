@@ -8,10 +8,10 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Changed
--
+- Updated `azure-pipelines.yml` preflight toolchain detection to resolve Xcode via `xcode-select` first, then fallback to installed `/Applications/Xcode*.app` paths for better Azure agent compatibility.
 
 ### Fixed
--
+- Added clearer preflight diagnostics when no valid Xcode toolchain is discovered (selected path output + installed Xcode app listing).
 
 
 ## [4.5.0] - 2026-02-20

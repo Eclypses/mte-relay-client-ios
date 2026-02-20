@@ -26,16 +26,17 @@ steps:
   - script: |
       set -euo pipefail
 
-      selected=""
-      for candidate in /Applications/Xcode_16.2.app /Applications/Xcode_16.1.app /Applications/Xcode_16.0.app /Applications/Xcode_15.4.app; do
-        if [ -d "$candidate/Contents/Developer" ]; then
-          selected="$candidate/Contents/Developer"
-          break
-        fi
-      done
+      selected="$(xcode-select -p 2>/dev/null || true)"
 
-      if [ -z "$selected" ]; then
-        echo "Error: Required Xcode toolchain not found."
+      if [ -z "$selected" ] || [ ! -x "$selected/usr/bin/xcodebuild" ]; then
+        selected="$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | sort -Vr | head -n 1 || true)"
+      fi
+
+      if [ -z "$selected" ] || [ ! -x "$selected/usr/bin/xcodebuild" ]; then
+        echo "Error: Xcode toolchain not found via xcode-select or /Applications/Xcode*.app."
+        echo "xcode-select -p output: $(xcode-select -p 2>/dev/null || echo '<none>')"
+        echo "Installed Xcode apps:"
+        ls -1 /Applications | grep '^Xcode' || true
         exit 1
       fi
 
