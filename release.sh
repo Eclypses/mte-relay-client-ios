@@ -1,6 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+# Release workflow note:
+# - This repository uses squash merges to master.
+# - Releases are created from develop.
+# - Preflight checks are intentionally simple: branch, clean tree, and "not behind origin/develop".
+# - Complex divergence handling is intentionally avoided to match this workflow.
+
 # Usage: ./release.sh 4.3.2
 
 # --- CONFIGURATION ---
@@ -9,6 +15,8 @@ SETTINGS_PATH="Classes/MteRelay/Settings.swift"
 CHANGELOG_PATH="CHANGELOG.md"
 PACKAGE_PATH="Package.swift"
 # ---------------------
+
+TARGET_BRANCH="develop"
 
 require_clean_tree() {
   if [ -n "$(git status --porcelain)" ]; then
@@ -20,14 +28,23 @@ require_clean_tree() {
 require_develop_branch() {
   local current_branch
   current_branch="$(git rev-parse --abbrev-ref HEAD)"
-  if [ "$current_branch" != "develop" ]; then
-    echo "Error: Releases must be cut from 'develop'. Current branch: '$current_branch'."
+  if [ "$current_branch" != "$TARGET_BRANCH" ]; then
+    echo "Error: release must be run from '$TARGET_BRANCH' (current: '$current_branch')."
+    exit 1
+  fi
+}
+
+require_up_to_date_with_origin() {
+  git fetch origin "$TARGET_BRANCH" --prune
+
+  if ! git merge-base --is-ancestor "origin/$TARGET_BRANCH" HEAD; then
+    echo "Error: local '$TARGET_BRANCH' is behind origin/$TARGET_BRANCH. Run: git pull --ff-only origin $TARGET_BRANCH"
     exit 1
   fi
 }
 
 # 1. Validation
-if [ -z "$1" ]; then
+if [ -z "${1:-}" ]; then
   echo "Error: No version supplied."
   echo "Usage: ./release.sh <new_version>"
   echo "Example: ./release.sh 4.3.2"
@@ -46,11 +63,22 @@ fi
 
 require_develop_branch
 require_clean_tree
+require_up_to_date_with_origin
 
 # STRIP 'v' if the user accidentally typed it (e.g. v4.3.2 -> 4.3.2)
 CLEAN_VERSION="${1#v}"
 TAG_VERSION="v$CLEAN_VERSION"
 DATE=$(date +%Y-%m-%d)
+
+if git rev-parse -q --verify "refs/tags/$TAG_VERSION" >/dev/null; then
+  echo "Error: tag '$TAG_VERSION' already exists locally."
+  exit 1
+fi
+
+if git ls-remote --tags origin | grep -q "refs/tags/$TAG_VERSION$"; then
+  echo "Error: tag '$TAG_VERSION' already exists on origin."
+  exit 1
+fi
 
 echo "🚀 Preparing release: $TAG_VERSION on $DATE"
 
@@ -104,4 +132,4 @@ echo "🏷️  Tagging version $TAG_VERSION..."
 git tag -a "$TAG_VERSION" -m "Release version $CLEAN_VERSION"
 
 echo "✅ Done! Validate the changes, then run:"
-echo "   git push origin develop && git push origin $TAG_VERSION"
+echo "   git push origin $TARGET_BRANCH $TAG_VERSION"
