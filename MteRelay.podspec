@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'MteRelay'
-  s.version      = '4.5.0'
+  s.version      = '4.5.1'
   s.summary      = 'Eclypses MTE Relay Client for iOS'
   s.description  = 'Swift wrapper and client for the Eclypses MTE Relay, including the precompiled Mte static library.'
   s.homepage     = 'https://github.com/Eclypses/mte-relay-client-ios'
@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '16.0'
   s.swift_version = '5.9'
 
-  s.source = { :git => "https://github.com/Eclypses/mte-relay-client-ios.git", :tag => "v4.5.0" }
+  s.source = { :git => "https://github.com/Eclypses/mte-relay-client-ios.git", :tag => "v4.5.1" }
 
   # All your Swift source files and internal C header files are listed here.
   s.source_files = [

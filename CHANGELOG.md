@@ -8,6 +8,18 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Changed
+-
+
+### Fixed
+-
+
+
+## [4.5.1] - 2026-02-20
+
+### Added
+-
+
+### Changed
 - Updated `azure-pipelines.yml` preflight toolchain detection to resolve Xcode via `xcode-select` first, then fallback to installed `/Applications/Xcode*.app` paths for better Azure agent compatibility.
 
 ### Fixed
@@ -230,3 +242,5 @@ All notable changes to this project will be documented in this file.
 [4.4.10]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.4.10
 
 [4.5.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.0
+
+[4.5.1]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.1
