@@ -14,6 +14,7 @@ REPO_URL="https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios"
 SETTINGS_PATH="Classes/MteRelay/Settings.swift"
 CHANGELOG_PATH="CHANGELOG.md"
 PACKAGE_PATH="Package.swift"
+PODSPEC_PATH="MteRelay.podspec"
 # ---------------------
 
 TARGET_BRANCH="develop"
@@ -95,7 +96,13 @@ sed -i '' "s/static let relayVersion = \".*\"/static let relayVersion = \"$CLEAN
 # Looks for: // Version: ...
 sed -i '' "s/\/\/ Relay Package Version: .*/\/\/ Relay Package Version: $CLEAN_VERSION/" "$PACKAGE_PATH"
 
-# 4. Update CHANGELOG.md Headers
+# 4. Update MteRelay.podspec
+# Looks for: s.version = '...'
+sed -i '' "s/s.version      = '.*'/s.version      = '$CLEAN_VERSION'/" "$PODSPEC_PATH"
+# Looks for: :tag => "..."
+sed -i '' "s/:tag => \".*\"/:tag => \"$TAG_VERSION\"/" "$PODSPEC_PATH"
+
+# 5. Update CHANGELOG.md Headers
 # Uses tags like [4.3.2] for headers
 # NOTE: Requires a '## [Unreleased]' section in your CHANGELOG.md to work.
 SEARCH="## \[Unreleased\]"
@@ -115,7 +122,7 @@ REPLACE="## [Unreleased]\\
 
 sed -i '' "s/$SEARCH/$REPLACE/" "$CHANGELOG_PATH"
 
-# 5. Update CHANGELOG.md Reference Links
+# 6. Update CHANGELOG.md Reference Links
 # IMPORTANT: The URL must match the Git Tag (which now has 'v')
 # Link format: [4.3.2]: .../releases/tag/v4.3.2
 NEW_LINK="[$CLEAN_VERSION]: $REPO_URL/releases/tag/$TAG_VERSION"
@@ -123,9 +130,9 @@ NEW_LINK="[$CLEAN_VERSION]: $REPO_URL/releases/tag/$TAG_VERSION"
 echo "" >> "$CHANGELOG_PATH"
 echo "$NEW_LINK" >> "$CHANGELOG_PATH"
 
-# 6. Git Operations
+# 7. Git Operations
 echo "📦 Committing changes..."
-git add "$SETTINGS_PATH" "$PACKAGE_PATH" "$CHANGELOG_PATH"
+git add "$SETTINGS_PATH" "$PACKAGE_PATH" "$PODSPEC_PATH" "$CHANGELOG_PATH"
 git commit -m "chore: bump version to $CLEAN_VERSION"
 
 echo "🏷️  Tagging version $TAG_VERSION..."
