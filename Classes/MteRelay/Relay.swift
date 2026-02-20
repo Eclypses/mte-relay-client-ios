@@ -25,7 +25,9 @@
 
 import Foundation
 import os
+#if canImport(UIKit)
 import UIKit
+#endif
 
 public class Relay: ObservableObject, RelayResponseDelegate, RelayStreamDelegate, RelayStreamCompletionDelegate, RelayStreamResponseDelegate {
     

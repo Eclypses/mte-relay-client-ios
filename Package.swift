@@ -8,7 +8,8 @@ import PackageDescription
 let package = Package(
     name: "MteRelay",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v16),
+        .macOS(.v12)
     ],
     products: [
         .library(
@@ -45,5 +46,10 @@ let package = Package(
            path: "Classes/Mte",
            exclude: ["mte.xcframework"]
        ),
+        .testTarget(
+            name: "MteRelayTests",
+            dependencies: ["MteRelay"],
+            path: "Tests/MteRelayTests"
+        ),
     ]
 )
