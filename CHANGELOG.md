@@ -11,6 +11,18 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Fixed
+-
+
+
+## [4.5.3] - 2026-02-20
+
+### Added
+-
+
+### Changed
+-
+
+### Fixed
 - Removed unsupported `@retroactive` attribute usage in `Classes/MteRelay/Helpers/Extensions.swift` to restore compatibility with Azure-hosted Xcode/Swift toolchains.
 
 
@@ -258,3 +270,5 @@ All notable changes to this project will be documented in this file.
 [4.5.1]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.1
 
 [4.5.2]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.2
+
+[4.5.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.3
