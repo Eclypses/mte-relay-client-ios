@@ -15,13 +15,13 @@ let package = Package(
         .library(
             name: "MteRelay",
             targets: ["MteRelay"]
-        ),
+        )
     ],
     targets: [
         .target(
             name: "MteRelay",
             dependencies: [
-                .target(name: "Mte"),
+                .target(name: "Mte")
             ],
             path: "Classes",
             sources: [
@@ -32,7 +32,7 @@ let package = Package(
            ],
            swiftSettings: [
                .define("MTE_SWIFT_PACKAGE_MANAGER")
-            ],
+            ]
         ),
         .binaryTarget(
             name: "mteBinary",
@@ -50,6 +50,6 @@ let package = Package(
             name: "MteRelayTests",
             dependencies: ["MteRelay"],
             path: "Tests/MteRelayTests"
-        ),
+        )
     ]
 )
