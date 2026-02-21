@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 -
 
 ### Fixed
--
+- Removed unsupported `@retroactive` attribute usage in `Classes/MteRelay/Helpers/Extensions.swift` to restore compatibility with Azure-hosted Xcode/Swift toolchains.
 
 
 ## [4.5.2] - 2026-02-20

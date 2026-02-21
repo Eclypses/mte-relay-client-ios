@@ -45,8 +45,8 @@ extension Data {
     }
 }
 
-extension String: @retroactive Error {}
-extension String: @retroactive LocalizedError {
+extension String: Error {}
+extension String: LocalizedError {
     public var errorDescription: String? { return self }
 }
 
