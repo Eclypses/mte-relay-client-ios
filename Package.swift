@@ -2,7 +2,7 @@
 
 import PackageDescription
 
-// Relay Package Version: 4.5.1
+// Relay Package Version: 4.5.2
 // Mte Version: 4.1.0
 
 let package = Package(
