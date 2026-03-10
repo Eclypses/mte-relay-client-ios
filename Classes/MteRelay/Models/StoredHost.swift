@@ -27,6 +27,6 @@ import Foundation
 
 struct StoredHost: Codable {
     let hostUrlB64: String
-    let clientId: String
+    var clientId: String
     var storedPairs: [StoredPair]
 }

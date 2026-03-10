@@ -31,22 +31,21 @@ class PairingHelper {
     static let keychainService = "key"
     private static let logger = PackageLogger.makeLogger(for: PairingHelper.self)
     
-    static func initialPairingWithHost(hostUrl: String, mteHelper: MteHelper) throws -> Task<Bool, Error> {
+    static func initialPairingWithHost(hostUrl: String, mteHelper: MteHelper, clientId: String) throws -> Task<String, Error> {
         Task.init {
-            try await makeHeadRequest(hostUrl: hostUrl)
+            let newClientId = try await makeHeadRequest(hostUrl: hostUrl, clientId: clientId)
             let pairDictionary = try mteHelper.createPairDictionary(count: Settings.pairPoolSize)
-            try await pair(hostUrl: hostUrl, pairDictionary: pairDictionary, mteHelper: mteHelper)
-            return true
+            return try await pair(hostUrl: hostUrl, pairDictionary: pairDictionary, mteHelper: mteHelper, clientId: newClientId)
         }
     }
     
-    static func addPair(hostUrl: String, pair: Pair, mteHelper: MteHelper) async throws {
+    static func addPair(hostUrl: String, pair: Pair, mteHelper: MteHelper, clientId: String) async throws {
         let pairDictionary: [String: Pair] = [pair.pairId: pair]
-        try await PairingHelper.pair(hostUrl: hostUrl, pairDictionary: pairDictionary, mteHelper: mteHelper)
+        _ = try await PairingHelper.pair(hostUrl: hostUrl, pairDictionary: pairDictionary, mteHelper: mteHelper, clientId: clientId)
     }
     
     //MARK: Make HEAD Request
-    static func makeHeadRequest(hostUrl: String) async throws {
+    static func makeHeadRequest(hostUrl: String, clientId: String, isRetry: Bool = false) async throws -> String {
         let connectionModel = InternalConnectionModel(url: hostUrl,
                                                            method: RelayMethod.HEAD,
                                                            route: RelayRoutes.HEAD_REQUEST,
@@ -55,20 +54,26 @@ class PairingHelper {
                                                            relayHeaders: RelayHeaders())
         
         // Make HEAD request to get ClientId from a valid Relay Server
-        let callResult = await PairingHelper.call(connectionModel: connectionModel)
+        let callResult = await PairingHelper.call(connectionModel: connectionModel, clientId: clientId)
         switch callResult {
             
         case .failure(let code, let message):
-            let errorMessage = "HEAD Request again returned failure. Error Code: \(code). Error Message: \(message)"
-            logger.error("\(errorMessage)")
-            throw errorMessage
+            if !isRetry && checkForRePair(statusCode: code) {
+                // clientId was stale (566); retry once with empty clientId so server issues a new one
+                logger.info("Retrying HEAD request after clearing stale clientId.")
+                return try await makeHeadRequest(hostUrl: hostUrl, clientId: "", isRetry: true)
+            } else {
+                let errorMessage = "HEAD Request returned failure. Error Code: \(code). Error Message: \(message)"
+                logger.error("\(errorMessage)")
+                throw errorMessage
+            }
 
         case .success(_, let headers):
-            Settings.clientId = headers.clientId
+            return headers.clientId
         }
     }
     
-    private static func pair(hostUrl: String, pairDictionary: [String : Pair], mteHelper: MteHelper) async throws {
+    private static func pair(hostUrl: String, pairDictionary: [String : Pair], mteHelper: MteHelper, clientId: String) async throws -> String {
         var pairingRequestArray = [PairingRequest]()
         for pair in pairDictionary {
             let pairKeys = PairingRequest(
@@ -87,7 +92,7 @@ class PairingHelper {
                                                            contentType: "application/json; charset=utf-8",
                                                            relayHeaders: RelayHeaders())
         // Make pairing call
-        let callResult = await PairingHelper.call(connectionModel: connectionModel)
+        let callResult = await PairingHelper.call(connectionModel: connectionModel, clientId: clientId)
         switch callResult {
             
         case .failure(let code, let message):
@@ -97,13 +102,12 @@ class PairingHelper {
             
         case .success(let data, let relayHeaders):
             logger.info("Pairing request with \(hostUrl) was successful! ClientId is \(relayHeaders.clientId)")
-            Settings.clientId = relayHeaders.clientId
             do {
                 let response = try JSONDecoder().decode([PairingResponse].self, from: data)
                 for p in response {
                     guard let pair = pairDictionary[p.pairId] else {
                         logger.error("Pair not found in Response")
-                        return
+                        return relayHeaders.clientId
                     }
                     logger.info("Server returned Pair Id \(pair.pairId!)")
                     pair.encPeerEncryptedSecret = b64StrToBytes(publicKeyStr: p.decoderSecret)
@@ -117,6 +121,7 @@ class PairingHelper {
                 logger.error("\(errorMessage)")
                 throw errorMessage
             }
+            return relayHeaders.clientId
         }
     }
     
@@ -135,19 +140,13 @@ class PairingHelper {
     
     
     // MARK: Network Call
-    static func call(connectionModel: InternalConnectionModel) async -> RelayApiResult<Data> {
-        let pairingOptions = RelayOptions(clientId: Settings.clientId,
-                                                 pairId: "",
-                                                 encodeType: EncoderType.MKE.rawValue,
-                                                 urlIsEncoded: true,
-                                                 headersAreEncoded: true,
-                                                 bodyIsEncoded: true)
+    static func call(connectionModel: InternalConnectionModel, clientId: String) async -> RelayApiResult<Data> {
         let url = URL(string: String(format: "%@%@", connectionModel.url, connectionModel.route))
         var request = URLRequest(url: url!)
         request.httpMethod = connectionModel.method
         request.httpBody = connectionModel.payload
         request.setValue(connectionModel.contentType, forHTTPHeaderField: "Content-Type")
-        request.setValue(formatMteRelayHeader(options: pairingOptions), forHTTPHeaderField: RelayHeaderNames.xMteRelay.rawValue)
+        request.setValue(clientId, forHTTPHeaderField: RelayHeaderNames.xMteRelay.rawValue)
         return await withCheckedContinuation { continuation in
             URLSession.shared.dataTask(with: request) { (data, response, error) in
                 if let error = error {
@@ -188,7 +187,6 @@ class PairingHelper {
     static func checkForRePair(statusCode: String) -> Bool {
         if let statusCodeInt = Int(statusCode), statusCodeInt == 566 {
             logger.info("Server doesn't recognize this Client. Re-pairing required")
-            Settings.clientId = ""
             return true
         } else if let statusCodeInt = Int(statusCode), 559...569 ~= statusCodeInt {
             logger.info("Server doesn't recognize this Pair. Re-pairing required")
