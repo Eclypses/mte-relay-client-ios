@@ -82,15 +82,17 @@ public class Relay: ObservableObject, RelayResponseDelegate, RelayStreamDelegate
     }
     
     // MARK: Public Functions
-    public func dataTask(with origRequest: URLRequest,
-                         headersToEncrypt: [String]?,
-                         completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) async -> Void {
-        await dataTask(with: origRequest, headersToEncrypt: headersToEncrypt, pathnamePrefix: nil, completionHandler: completionHandler)
-    }
+   public func dataTask(with origRequest: URLRequest,
+                        headersToEncrypt: [String]?,
+                         preventStreaming: Bool = false,
+                        completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) async -> Void {
+       await dataTask(with: origRequest, headersToEncrypt: headersToEncrypt, pathnamePrefix: nil, preventStreaming: preventStreaming, completionHandler: completionHandler)
+   }
     
     public func dataTask(with origRequest: URLRequest,
                          headersToEncrypt: [String]?,
                          pathnamePrefix: String?,
+                         preventStreaming: Bool = false,
                          completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) async -> Void {
         do {
             guard let host = try await retrieveHost(origRequest: origRequest, pathnamePrefix: pathnamePrefix) else {
@@ -101,6 +103,7 @@ public class Relay: ObservableObject, RelayResponseDelegate, RelayStreamDelegate
             await host.dataTask(with: origRequest,
                                 headersToEncrypt: headersToEncrypt,
                                 pathnamePrefix: pathnamePrefix,
+                                preventStreaming: preventStreaming,
                                 completionHandler: completionHandler)
         } catch {
             completionHandler(nil, nil, "Error: \(error.localizedDescription)")

@@ -39,7 +39,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
     }
     
     func pairingNeeded(for newPair: Pair) async throws {
-        try await PairingHelper.addPair(hostUrl: hostUrl, pair: newPair, mteHelper: mteHelper)
+        try await PairingHelper.addPair(hostUrl: hostUrl, pair: newPair, mteHelper: mteHelper, clientId: self.clientId)
         mteHelper.registerNewPairedPair(newPair)
     }
     
@@ -74,6 +74,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
     var hostStorageHelper: HostStorageHelper!
     var mteHelper: MteHelper!
     var hostPaired = false
+    var clientId: String = ""
     private var prevDataTask: PrevDataTask!
     private var prevUploadTask: PrevUploadTask!
     private var prevDownloadTask: PrevDownloadTask!
@@ -84,6 +85,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
         let request: URLRequest
         let headersToEncrypt: [String]?
         let pathnamePrefix: String?
+        let preventStreaming: Bool
         let completionHandler: @Sendable (Data?, URLResponse?, Error?) -> Void
     }
     
@@ -105,6 +107,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
     func dataTask(with origRequest: URLRequest,
                   headersToEncrypt: [String]?,
                   pathnamePrefix: String?,
+                  preventStreaming: Bool,
                   completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) async -> Void {
         
         // Limit rePair/reSend attempts to just one.
@@ -112,6 +115,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
             prevDataTask = PrevDataTask(request: origRequest,
                                         headersToEncrypt: headersToEncrypt,
                                         pathnamePrefix: pathnamePrefix,
+                                        preventStreaming: preventStreaming,
                                         completionHandler: completionHandler)
         } else {
             prevDataTask = nil
@@ -144,6 +148,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
             }
             setRelayHeader(pairId: createRelayRequestResult.pairId,
                            bodyIsEncoded: encryptBody,
+                           preventStreaming: preventStreaming,
                            relayRequest: &createRelayRequestResult.relayRequest)
             createRelayRequestResult.relayRequest.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         } catch {
@@ -179,7 +184,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
                 logger.info("DataTask status code: \(relayResponse.statusCode)")
                 if PairingHelper.checkForRePair(statusCode: String(relayResponse.statusCode)) {
                     Task {
-                        try await rePairHost()
+                        try await rePairHost(clearClientId: relayResponse.statusCode == 566)
                     }
                     return
                 }
@@ -266,7 +271,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
             
             Task {
                 logger.info("Returned Status Code \(relayResponse.statusCode) so we'll rePair, then resend the request")
-                try await rePairHost()
+                try await rePairHost(clearClientId: relayResponse.statusCode == 566)
                 do {
                     try await uploadFileStream(origRequest: prevUploadTask.origRequest,
                                                headersToEncrypt: prevUploadTask.headersToEncrypt,
@@ -331,7 +336,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
         {
             Task {
                 logger.info("Returned Status Code \(relayResponse.statusCode) so we'll rePair, then resend the request")
-                try await rePairHost()
+                try await rePairHost(clearClientId: relayResponse.statusCode == 566)
                 await downloadFileStream(origRequest: prevDownloadTask.origRequest,
                                          headersToEncrypt: prevDownloadTask.headersToEncrypt,
                                          pathnamePrefix: prevDownloadTask.pathnamePrefix,
@@ -355,8 +360,9 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
         }
     }
     
-    func rePairHost() async throws {
-        try hostStorageHelper.removeHostStoredPairs()
+    func rePairHost(clearClientId: Bool = false) async throws {
+        if clearClientId { self.clientId = "" }
+        try hostStorageHelper.removeHostStoredPairs(clearClientId: clearClientId)
         await setUpPairs()
     }
     
@@ -366,7 +372,7 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
         do {
             await self.hostStorageHelper = try HostStorageHelper(hostB64: hostUrlB64)
             if hostStorageHelper.storedHost != nil {
-                Settings.clientId = hostStorageHelper.storedHost.clientId
+                self.clientId = hostStorageHelper.storedHost.clientId
                 do {
                     if hostStorageHelper.storedHost.storedPairs.count > 0 {
                         try mteHelper.refillPairDictionary(storedHost: hostStorageHelper.storedHost)
@@ -376,18 +382,17 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
                         } else {
                             logger.info("Stored Pairs not found so we'll re-pair with \(self.hostUrl ?? "Unknown host").")
                         }
-                        let pairingResult = try PairingHelper.initialPairingWithHost(hostUrl: self.hostUrl, mteHelper: self.mteHelper)
-                        
-                        if try await pairingResult.value {
-                            relayResponseDelegate?.relayResponse(success: true, responseStr: "Successfully rePaired with \(self.hostUrl!)", errorMessage: "")
-                            conditionallyStoreStates()
-                            if prevDataTask != nil {
-                                logger.info("Retrying previous request.")
-                                await dataTask(with: prevDataTask.request,
-                                               headersToEncrypt: prevDataTask.headersToEncrypt,
-                                               pathnamePrefix: prevDataTask.pathnamePrefix,
-                                               completionHandler: prevDataTask.completionHandler)
-                            }
+                        let pairingResult = try PairingHelper.initialPairingWithHost(hostUrl: self.hostUrl, mteHelper: self.mteHelper, clientId: self.clientId)
+                        self.clientId = try await pairingResult.value
+                        relayResponseDelegate?.relayResponse(success: true, responseStr: "Successfully rePaired with \(self.hostUrl!)", errorMessage: "")
+                        conditionallyStoreStates()
+                        if prevDataTask != nil {
+                            logger.info("Retrying previous request.")
+                            await dataTask(with: prevDataTask.request,
+                                           headersToEncrypt: prevDataTask.headersToEncrypt,
+                                           pathnamePrefix: prevDataTask.pathnamePrefix,
+                                           preventStreaming: prevDataTask.preventStreaming,
+                                           completionHandler: prevDataTask.completionHandler)
                         }
                     }
                 } catch {
@@ -395,11 +400,11 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
                 }
             } else {
                 do {
-                    let pairingResult = try PairingHelper.initialPairingWithHost(hostUrl: hostUrl, mteHelper: mteHelper)
-                    if try await pairingResult.value {
-                        relayResponseDelegate?.relayResponse(success: true, responseStr: "Successfully Paired with \(self.hostUrl!)", errorMessage: "")
-                        conditionallyStoreStates()
-                    }
+                    self.clientId = ""
+                    let pairingResult = try PairingHelper.initialPairingWithHost(hostUrl: hostUrl, mteHelper: mteHelper, clientId: self.clientId)
+                    self.clientId = try await pairingResult.value
+                    relayResponseDelegate?.relayResponse(success: true, responseStr: "Successfully Paired with \(self.hostUrl!)", errorMessage: "")
+                    conditionallyStoreStates()
                 } catch {
                     relayResponseDelegate?.relayResponse(success: false, responseStr: "Unable to Pair with \(self.hostUrl!)", errorMessage: error.localizedDescription)
                 }
@@ -468,13 +473,14 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
         return pairId
     }
     
-    private func setRelayHeader(pairId: String, bodyIsEncoded: Bool, relayRequest: inout URLRequest) {
-        let relayOptions = RelayOptions(clientId: Settings.clientId,
+    private func setRelayHeader(pairId: String, bodyIsEncoded: Bool, preventStreaming: Bool = false, relayRequest: inout URLRequest) {
+        let relayOptions = RelayOptions(clientId: clientId,
                                         pairId: pairId,
                                         encodeType: EncoderType.MKE.rawValue,
                                         urlIsEncoded: true,
                                         headersAreEncoded: true,
-                                        bodyIsEncoded: bodyIsEncoded)
+                                        bodyIsEncoded: bodyIsEncoded,
+                                        preventStreaming: preventStreaming)
         relayRequest.setValue(formatMteRelayHeader(options: relayOptions), forHTTPHeaderField: RelayHeaderNames.xMteRelay.rawValue)
     }
     
@@ -483,12 +489,12 @@ class Host: RelayStreamCompletionDelegate, RelayStreamDelegate, FileUploadResult
             var statesToStore = [StoredPair]()
             if Settings.persistPairs {
                 statesToStore = try await mteHelper.getPairDictionaryStates()
-                do {
-                    try await self.hostStorageHelper.storeStates(storedPairs: statesToStore)
-                } catch {
-                    logger.error("Unable to persist Mte State: \(error.localizedDescription)")
-                    self.relayResponseDelegate?.relayResponse(success: false, responseStr: "", errorMessage: error.localizedDescription)
-                }
+            }
+            do {
+                try await self.hostStorageHelper.storeStates(clientId: self.clientId, storedPairs: statesToStore)
+            } catch {
+                logger.error("Unable to persist Mte State: \(error.localizedDescription)")
+                self.relayResponseDelegate?.relayResponse(success: false, responseStr: "", errorMessage: error.localizedDescription)
             }
         }
     }

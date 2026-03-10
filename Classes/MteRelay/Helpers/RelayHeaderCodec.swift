@@ -7,6 +7,7 @@ struct RelayOptions {
     var urlIsEncoded: Bool
     var headersAreEncoded: Bool
     var bodyIsEncoded: Bool
+    var preventStreaming: Bool = false
 }
 
 func formatMteRelayHeader(options: RelayOptions) -> String {
@@ -17,6 +18,7 @@ func formatMteRelayHeader(options: RelayOptions) -> String {
     args.append(options.urlIsEncoded ? "1" : "0")
     args.append(options.headersAreEncoded ? "1" : "0")
     args.append(options.bodyIsEncoded ? "1" : "0")
+    args.append(options.preventStreaming ? "1" : "0")
 
     return args.joined(separator: ",")
 }
@@ -34,14 +36,16 @@ func parseMteRelayHeader(header: String) -> RelayOptions? {
                             encodeType: args[2] == "0" ? "MTE" : "MKE",
                             urlIsEncoded: args[3] == "1",
                             headersAreEncoded: args[4] == "1",
-                            bodyIsEncoded: args[5] == "1")
+                            bodyIsEncoded: args[5] == "1",
+                            preventStreaming: args[6] == "1")
     } else {
         return RelayOptions(clientId: args[0],
                             pairId: "",
                             encodeType: "",
                             urlIsEncoded: false,
                             headersAreEncoded: false,
-                            bodyIsEncoded: false)
+                            bodyIsEncoded: false,
+                            preventStreaming: false)
     }
 }
 

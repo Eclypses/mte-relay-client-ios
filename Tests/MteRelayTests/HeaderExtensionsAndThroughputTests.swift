@@ -9,7 +9,8 @@ final class HeaderExtensionsAndThroughputTests: XCTestCase {
             encodeType: EncoderType.MTE.rawValue,
             urlIsEncoded: true,
             headersAreEncoded: true,
-            bodyIsEncoded: false
+            bodyIsEncoded: false,
+            preventStreaming: false
         )
 
         let header = formatMteRelayHeader(options: options)
@@ -22,6 +23,29 @@ final class HeaderExtensionsAndThroughputTests: XCTestCase {
         XCTAssertEqual(parsed?.urlIsEncoded, true)
         XCTAssertEqual(parsed?.headersAreEncoded, true)
         XCTAssertEqual(parsed?.bodyIsEncoded, false)
+        XCTAssertEqual(parsed?.preventStreaming, false)
+    }
+
+    func testPreventStreamingFlagRoundTrip() {
+        // true should encode as "1" and parse back as true
+        let enabledOptions = RelayOptions(
+            clientId: "c", pairId: "p",
+            encodeType: EncoderType.MKE.rawValue,
+            urlIsEncoded: false, headersAreEncoded: false, bodyIsEncoded: false,
+            preventStreaming: true
+        )
+        let enabledParsed = parseMteRelayHeader(header: formatMteRelayHeader(options: enabledOptions))
+        XCTAssertEqual(enabledParsed?.preventStreaming, true)
+
+        // false should encode as "0" and parse back as false
+        let disabledOptions = RelayOptions(
+            clientId: "c", pairId: "p",
+            encodeType: EncoderType.MKE.rawValue,
+            urlIsEncoded: false, headersAreEncoded: false, bodyIsEncoded: false,
+            preventStreaming: false
+        )
+        let disabledParsed = parseMteRelayHeader(header: formatMteRelayHeader(options: disabledOptions))
+        XCTAssertEqual(disabledParsed?.preventStreaming, false)
     }
 
     func testRelayHeaderParseSingleClientId() {
