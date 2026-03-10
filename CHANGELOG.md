@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+-
+
+### Changed
+-
+
+### Fixed
+-
+
+
+## [4.6.0] - 2026-03-10
+
+### Added
 - Added `preventStreaming` flag (5th field) to `RelayOptions` and the MTE-Relay header codec (`RelayHeaderCodec.swift`). When `true`, signals the relay server to disable streaming and redirect the request for non-standard processing.
 - Added `preventStreaming: Bool = false` optional parameter to `Relay.dataTask` (both overloads). Defaults to `false` if omitted; always implicitly `false` for streaming upload/download calls.
 
@@ -273,3 +285,5 @@ All notable changes to this project will be documented in this file.
 [4.5.2]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.2
 
 [4.5.3]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.5.3
+
+[4.6.0]: https://github.com/Eclypses/eclypses-aws-mte-relay-client-ios/releases/tag/v4.6.0
