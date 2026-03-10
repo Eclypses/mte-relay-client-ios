@@ -1,6 +1,5 @@
 ## Context
 
-This task mirrors the Android library testing modernization we recently completed (deterministic tests + test seams + coverage gate + CI branch behavior + changelog/release hygiene), adapted to this Swift Package Manager (SPM) library.
 
 Read these project docs/files first (if present):
 - library context doc
@@ -18,7 +17,13 @@ Read these project docs/files first (if present):
 - Preserve public runtime behavior.
 - If architecture is ambiguous, state assumptions and continue.
 - Update changelog/context/testing docs after implementation.
-- Do not commit unless explicitly requested.
+
 
 ## Task
+- Review Changed files
+- Update README 
+- Update tests as necessary
+- Update Changelog
+- Appropriately group files and commit with an appropriate message for each group
+- I will manually push commits, using the release script. 
 

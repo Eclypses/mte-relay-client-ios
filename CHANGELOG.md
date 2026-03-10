@@ -5,13 +5,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
--
+- Added `preventStreaming` flag (5th field) to `RelayOptions` and the MTE-Relay header codec (`RelayHeaderCodec.swift`). When `true`, signals the relay server to disable streaming and redirect the request for non-standard processing.
+- Added `preventStreaming: Bool = false` optional parameter to `Relay.dataTask` (both overloads). Defaults to `false` if omitted; always implicitly `false` for streaming upload/download calls.
 
 ### Changed
 -
 
 ### Fixed
--
+- Fixed inverted wire encoding of `preventStreaming` in `RelayHeaderCodec.swift` so `true` serialises as `"1"` and `"1"` parses back as `true`, consistent with all other flag fields and server expectations.
 
 
 ## [4.5.3] - 2026-02-20

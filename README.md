@@ -297,6 +297,7 @@ await relay.dataTask(
 - **`with`** (`URLRequest`) - Your standard URLRequest object configured with URL, method, headers, and body
 - **`headersToEncrypt`** (`[String]?`) - Array of header names to encrypt. For example, `["Authorization", "X-API-Key"]`. Headers not in this list are sent unencrypted. Pass `nil` or `[]` to send all headers unencrypted (not recommended for sensitive data)
 - **`pathnamePrefix`** (`String?`) - Optional path to prepend to requests on the relay server. This is typically `nil` unless your relay server is configured with specific routing paths. For example, if your relay handles multiple backends, you might use `"/api/v1"` to route to a specific one
+- **`preventStreaming`** (`Bool`, default `false`) - When `true`, signals the relay server to disable its normal HTTP streaming handling and redirect the request for non-standard processing. This is rarely needed in a mobile client; omit it or pass `false` for all typical requests. Not available on streaming upload/download calls.
 - **Completion handler** - A closure called when the request completes, providing the decrypted `Data`, `URLResponse`, and any `Error`
 
 ### File Upload (Streaming)
